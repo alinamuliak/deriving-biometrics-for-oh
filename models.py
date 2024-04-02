@@ -33,7 +33,7 @@ class CNNModel(nn.Module):
         return final_out
 
 
-class HybridModelCNNLSTM(nn.Module):
+class HybridModel(nn.Module):
     def __init__(self, num_classes=4,
                  cnn_dropout=0.5,
                  lstm_hidden_size=128,
@@ -41,7 +41,7 @@ class HybridModelCNNLSTM(nn.Module):
                  lstm_dropout=0.5,
                  lstm_num_layers=2,
                  **kwargs):
-        super(HybridModelCNNLSTM, self).__init__()
+        super(HybridModel, self).__init__()
 
         self.cnn = nn.Sequential(
             nn.Conv1d(3, 32, kernel_size=3),

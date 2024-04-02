@@ -116,7 +116,7 @@ def create_dataloaders(X: list, y: list, batch_size: int, seed: int = 7777777,
                              collate_fn=collate_fn, generator=generator)
 
     if verbose:
-        print(f"Created dataloaders with batch size {batch_size}")
+        print(f"Created dataloaders with batch size {batch_size}.")
 
     if return_class_weights:
         class_counts = np.bincount(np.concatenate(y_train).ravel())
