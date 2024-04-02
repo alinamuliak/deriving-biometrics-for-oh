@@ -1,6 +1,7 @@
 """This module contains classes and functions for creating torch.Dataset and torch.DataLoader instances."""
 
 import torch
+import numpy as np
 from sklearn.model_selection import train_test_split
 from torch.nn.utils.rnn import pad_sequence, pack_padded_sequence, pad_packed_sequence
 from torch.utils.data import Dataset, DataLoader
@@ -77,8 +78,9 @@ def collate_fn(batch) -> tuple:
     return padded_sequences, lengths, padded_labels
 
 
-def create_dataloader(X: list, y: list, batch_size: int, seed: int = 7777777, verbose: bool = False)\
-        -> tuple[DataLoader, DataLoader, DataLoader]:
+def create_dataloaders(X: list, y: list, batch_size: int, seed: int = 7777777,
+                       return_class_weights: bool = True, verbose: bool = False)\
+        -> tuple[DataLoader, DataLoader, DataLoader] | tuple[DataLoader, DataLoader, DataLoader, torch.FloatTensor]:
     """
     Splits the data for train, validation, and test datasets.
     Creates dataloaders for each with the specified batch_size.
@@ -87,9 +89,10 @@ def create_dataloader(X: list, y: list, batch_size: int, seed: int = 7777777, ve
     :param y: List of labels.
     :param batch_size: Batch size for dataloaders.
     :param seed: Random seed for data splitting and shuffling.
+    :param return_class_weights: Whether to return an array with class weights from train dataset. Defaults to True.
     :param verbose: Whether to print progress during dataloaders creation.
 
-    :return: Train, validation, and test dataloaders.
+    :return: Train, validation, and test dataloaders. If return_class_weights is True, returns this array, too.
     """
     generator = torch.Generator().manual_seed(seed)
 
@@ -114,5 +117,12 @@ def create_dataloader(X: list, y: list, batch_size: int, seed: int = 7777777, ve
 
     if verbose:
         print(f"Created dataloaders with batch size {batch_size}")
+
+    if return_class_weights:
+        class_counts = np.bincount(np.concatenate(y_train).ravel())
+        class_weights = class_counts.sum() / (len(class_counts) * class_counts)
+        class_weights_tensor = torch.FloatTensor(class_weights)
+
+        return train_loader, val_loader, test_loader, class_weights_tensor
 
     return train_loader, val_loader, test_loader
