@@ -11,6 +11,12 @@ To install requirements:
 ```setup
 pip install -r requirements.txt
 ```
+If you have CUDA available on your laptop, download `torch` from the [PyTorch official site](https://pytorch.org/get-started/locally/),
+choosing your specific settings. Otherwise, the CPU will be used.
+For instance, using Windows with CUDA 11.8, execute:
+```setup
+pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+```
 
 >📋  Describe how to set up the environment, e.g. pip/conda/docker commands, download datasets, etc...
 
