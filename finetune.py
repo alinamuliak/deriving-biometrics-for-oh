@@ -26,10 +26,11 @@ def objective(trial):
     sequences, labels = stack_data(data)
     train_loader, val_loader, test_loader, class_weights = create_dataloaders(sequences, labels, batch_size=32,
                                                                               return_class_weights=True,
-                                                                              verbose=True)
+                                                                              verbose=False)
 
     lstm_hidden_size = trial.suggest_int('lstm_hidden_size', 100, 512)
-    lstm_bidirectional = trial.suggest_categorical('lstm_bidirectional', [True, False])
+    # lstm_bidirectional = trial.suggest_categorical('lstm_bidirectional', [True, False])
+    lstm_bidirectional = False      # fine-tuning uni- and bidirectional LSTMs separately
     lstm_dropout = trial.suggest_float('lstm_dropout', 0.25, 0.8)
     lstm_num_layers = trial.suggest_int('lstm_num_layers', 1, 5)
 
@@ -82,7 +83,7 @@ def objective(trial):
 
 
 study = optuna.create_study(direction='maximize')
-study.optimize(objective, n_trials=300)
+study.optimize(objective, n_trials=200)
 
 print("Best trial:")
 trial = study.best_trial

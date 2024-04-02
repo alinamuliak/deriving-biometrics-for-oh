@@ -48,6 +48,21 @@ You can download pretrained models here:
 
 >📋  Give a link to where/how the pretrained models can be downloaded and how they were trained (if applicable).  Alternatively you can have an additional column in your results table with a link to the models.
 
+## Fine-tuning hyperparameters
+
+### Unidirectional LSTM model
+```text
+Best trial:
+  Value: 0.804863519570318
+  Chosen parameters:
+    lstm_hidden_size: 245
+    lstm_dropout: 0.5121272011047441
+    lstm_num_layers: 4
+    learning_rate: 0.007313103957584319
+    weight_decay: 8.851455066952584e-06
+```
+
+
 ## Results
 
 Our model achieves the following performance on :
