@@ -62,6 +62,18 @@ Best trial:
     weight_decay: 8.851455066952584e-06
 ```
 
+### Bidirectional LSTM model
+```text
+Best trial:
+  Value: 0.743269281436279
+  Chosen parameters:
+    lstm_hidden_size: 193
+    lstm_dropout: 0.6973746565061162
+    lstm_num_layers: 2
+    learning_rate: 0.005500515398744944
+    weight_decay: 6.896816904654169e-06
+```
+
 
 ## Results
 

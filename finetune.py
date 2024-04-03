@@ -30,7 +30,7 @@ def objective(trial):
 
     lstm_hidden_size = trial.suggest_int('lstm_hidden_size', 100, 512)
     # lstm_bidirectional = trial.suggest_categorical('lstm_bidirectional', [True, False])
-    lstm_bidirectional = False      # fine-tuning uni- and bidirectional LSTMs separately
+    lstm_bidirectional = True      # fine-tuning uni- and bidirectional LSTMs separately
     lstm_dropout = trial.suggest_float('lstm_dropout', 0.25, 0.8)
     lstm_num_layers = trial.suggest_int('lstm_num_layers', 1, 5)
 
