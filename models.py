@@ -78,7 +78,7 @@ class HybridModel(nn.Module):
 
 class LSTMModel(nn.Module):
     def __init__(self, input_size=3, num_classes=4, lstm_hidden_size=128,
-                 lstm_bidirectional=True, lstm_dropout=0.5, lstm_num_layers=2, **kwargs):
+                 lstm_bidirectional=True, lstm_dropout=0.5, lstm_num_layers=2):
         super(LSTMModel, self).__init__()
 
         self.lstm = nn.LSTM(input_size=input_size,
