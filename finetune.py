@@ -21,21 +21,24 @@ else:
     device = 'cpu'
 
 
-def objective(trial):
-    data = load_data()
-    sequences, labels = stack_data(data)
-    train_loader, val_loader, test_loader, class_weights = create_dataloaders(sequences, labels, batch_size=32,
-                                                                              return_class_weights=True,
-                                                                              verbose=False)
+data = load_data()
+sequences, targets = stack_data(data)
 
-    lstm_hidden_size = trial.suggest_int('lstm_hidden_size', 100, 512)
+
+def objective(trial):
+    batch_size = trial.suggest_categorical('batch_size', [16, 32, 64])
+    lstm_hidden_size = trial.suggest_int('lstm_hidden_size', 128, 300)
     # lstm_bidirectional = trial.suggest_categorical('lstm_bidirectional', [True, False])
     lstm_bidirectional = True      # fine-tuning uni- and bidirectional LSTMs separately
-    lstm_dropout = trial.suggest_float('lstm_dropout', 0.25, 0.8)
-    lstm_num_layers = trial.suggest_int('lstm_num_layers', 1, 5)
+    lstm_dropout = trial.suggest_float('lstm_dropout', 0.2, 0.7)
+    lstm_num_layers = trial.suggest_int('lstm_num_layers', 2, 5)
 
-    learning_rate = trial.suggest_float('learning_rate', 1e-7, 1e-2, log=True)
+    learning_rate = trial.suggest_float('learning_rate', 1e-8, 1e-2, log=True)
     weight_decay = trial.suggest_float('weight_decay', 1e-6, 1e-2, log=True)
+
+    train_loader, val_loader, test_loader, class_weights = create_dataloaders(sequences, targets, batch_size=batch_size,
+                                                                              return_class_weights=True,
+                                                                              verbose=False)
 
     model = LSTMModel(
         lstm_hidden_size=lstm_hidden_size,
@@ -48,7 +51,7 @@ def objective(trial):
     criterion = nn.CrossEntropyLoss(weight=class_weights_tensor)
     optimizer = optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
 
-    num_epochs = 100
+    num_epochs = 50
     avg_val_acc = 0
     for epoch in range(num_epochs):
         model.train()
@@ -82,13 +85,14 @@ def objective(trial):
     return avg_val_acc
 
 
-study = optuna.create_study(direction='maximize')
-study.optimize(objective, n_trials=200)
+if __name__ == '__main__':
+    study = optuna.create_study(direction='maximize')
+    study.optimize(objective, n_trials=100)
 
-print("Best trial:")
-trial = study.best_trial
+    print("Best trial:")
+    trial = study.best_trial
 
-print(f"  Value: {trial.value}")
-print("  Chosen parameters: ")
-for key, value in trial.params.items():
-    print(f"    {key}: {value}")
+    print(f"  Value: {trial.value}")
+    print("  Chosen parameters: ")
+    for key, value in trial.params.items():
+        print(f"    {key}: {value}")
