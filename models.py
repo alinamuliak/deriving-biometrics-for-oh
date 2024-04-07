@@ -44,13 +44,13 @@ class HybridModel(nn.Module):
         super(HybridModel, self).__init__()
 
         self.cnn = nn.Sequential(
-            nn.Conv1d(3, 32, kernel_size=3),
+            nn.Conv1d(3, 64, kernel_size=5, dilation=5, padding=5),
             nn.ReLU(),
             nn.MaxPool1d(kernel_size=2),
             nn.Flatten()
         )
         self.dropout = nn.Dropout(p=cnn_dropout)
-        cnn_output_size = 2368
+        cnn_output_size = 4480
 
         self.lstm = nn.LSTM(input_size=cnn_output_size,
                             hidden_size=lstm_hidden_size,
@@ -67,6 +67,7 @@ class HybridModel(nn.Module):
         cnn_out = self.cnn(x)
         cnn_out = self.dropout(cnn_out)
         cnn_out = cnn_out.view(batch_size, num_windows, -1)
+        # print(cnn_out.shape)
 
         x_packed = pack_padded_sequence(cnn_out, lengths, batch_first=True, enforce_sorted=False)
         lstm_out, _ = self.lstm(x_packed)
