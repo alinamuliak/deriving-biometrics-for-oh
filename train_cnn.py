@@ -113,17 +113,21 @@ if __name__ == '__main__':
     data = load_data(file_path=join('data', 'W_AUGMENTED_DATA.json'))
     sequences, targets = stack_windowed_data(data)
     train_loader, val_loader, test_loader, class_weights = create_cnn_dataloaders(sequences, targets, batch_size=64,
-                                                                              return_class_weights=True,
-                                                                              verbose=False)
+                                                                                  return_class_weights=True,
+                                                                                  verbose=False)
 
-    model = CNNModel(n_blocks=2).to(device)
+    model = CNNModel(
+        cnn_dropout=0.5,
+        n_blocks=1,
+        out_channels=32
+    ).to(device)
     class_weights_tensor = torch.FloatTensor(class_weights).to(device)
     criterion = nn.CrossEntropyLoss(weight=class_weights_tensor)
-    optimizer = optim.Adam(model.parameters(), lr=0.0097285,
-                           weight_decay=7.254576818661595e-05)
+    optimizer = optim.Adam(model.parameters(), lr=0.00005,
+                           weight_decay=0.0005)
 
     model_name = 'cnn'
-    history = train(model, train_loader, val_loader, criterion, optimizer, num_epochs=1500,
+    history = train(model, train_loader, val_loader, criterion, optimizer, num_epochs=250,
                     model_name=model_name, device=device)
 
     print('Model trained. Final validation accuracy:', history['val_acc'][-1])

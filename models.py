@@ -20,6 +20,7 @@ class CNNModel(nn.Module):
         for _ in range(n_blocks):
             block = nn.Sequential(
                 nn.Conv1d(in_channels, out_channels, kernel_size=3, padding=1),
+                nn.BatchNorm1d(out_channels),
                 nn.ReLU(),
                 nn.MaxPool1d(kernel_size=2, stride=2)
             )
