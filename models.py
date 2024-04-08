@@ -6,30 +6,43 @@ from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
 
 
 class CNNModel(nn.Module):
-    def __init__(self, num_classes=4,
+    def __init__(self, in_channels=3,
+                 num_classes=4,
                  cnn_dropout=0.5,
-                 **kwargs):
+                 n_blocks=2,
+                 out_channels=32,
+                 window_size=150
+                 ):
         super(CNNModel, self).__init__()
 
-        self.cnn = nn.Sequential(
-            nn.Conv1d(3, 32, kernel_size=3),
-            nn.ReLU(),
-            nn.MaxPool1d(kernel_size=2),
-            nn.Flatten()
-        )
-        self.dropout = nn.Dropout(p=cnn_dropout)
-        cnn_output_size = 2368
+        self.blocks = nn.ModuleList()
 
+        for _ in range(n_blocks):
+            block = nn.Sequential(
+                nn.Conv1d(in_channels, out_channels, kernel_size=3, padding=1),
+                nn.ReLU(),
+                nn.MaxPool1d(kernel_size=2, stride=2)
+            )
+            self.blocks.append(block)
+            in_channels = out_channels
+
+        self.flatten = nn.Flatten()
+        self.dropout = nn.Dropout(p=cnn_dropout)
+
+        cnn_output_size = out_channels * (window_size // 2 ** n_blocks)
         self.fc = nn.Linear(cnn_output_size, num_classes)
 
     def forward(self, x):
-        batch_size, num_windows, channels, window_size = x.shape
+        batch_size, window_size, channels = x.shape
         x = x.view(-1, channels, window_size)
-        cnn_out = self.cnn(x)
-        cnn_out = self.dropout(cnn_out)
-        cnn_out = cnn_out.view(batch_size, num_windows, -1)
 
-        final_out = self.fc(cnn_out)
+        for block in self.blocks:
+            x = block(x)
+
+        x = self.flatten(x)
+        x = self.dropout(x)
+
+        final_out = self.fc(x)
         return final_out
 
 
