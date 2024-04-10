@@ -10,11 +10,9 @@ import random
 import matplotlib.pyplot as plt
 from os.path import join
 
-from torch.optim.lr_scheduler import StepLR
-
 from utils import load_data, stack_data, stack_windowed_data
 from dataset_loaders import create_dataloaders
-from models import CNNModel, LSTMModel
+from models import CNNModel, LSTMModel, HybridModel
 
 seed = 7777777
 torch.manual_seed(seed)
@@ -125,25 +123,56 @@ if __name__ == '__main__':
     #     optimizer = optim.Adam(model.parameters(), lr=0.0097285,
     #                            weight_decay=7.254576818661595e-05)
 
-    sequences, targets = stack_data(data)
-    train_loader, val_loader, test_loader, class_weights = create_dataloaders(sequences, targets, batch_size=64,
+    # sequences, targets = stack_data(data)
+    # train_loader, val_loader, test_loader, class_weights = create_dataloaders(sequences, targets, batch_size=64,
+    #                                                                           return_class_weights=True,
+    #                                                                           verbose=False)
+    #
+    # model = LSTMModel(lstm_hidden_size=275,
+    #                   lstm_dropout=0.6,
+    #                   lstm_num_layers=2,
+    #                   lstm_bidirectional=True).to(device)
+    #
+    # learning_rate = 0.001
+    # weight_decay = 5.870105951285154e-05
+    #
+    # class_weights_tensor = class_weights.to(device)
+    # criterion = nn.CrossEntropyLoss(weight=class_weights_tensor)
+    # optimizer = optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
+    #
+    # model_name = 'bilistm'
+
+    sequences, targets = stack_windowed_data(data)
+    train_loader, val_loader, test_loader, class_weights = create_dataloaders(sequences, targets, batch_size=32,
                                                                               return_class_weights=True,
                                                                               verbose=False)
 
-    model = LSTMModel(lstm_hidden_size=200,
-                      lstm_dropout=0.65,
-                      lstm_num_layers=2,
-                      lstm_bidirectional=True).to(device)
+    hyperPARAMS = {'cnn_dropout': 0.25,
+                   'lstm_hidden_size': 200,
+                   'lstm_bidirectional': False,
+                   'lstm_dropout': 0.6,
+                   'lstm_num_layers': 2}
+    hyperPARAMS = {
+        'cnn_dropout': 0.388,
+        'n_conv_blocks': 2,
+        'cnn_out_channels': 32,
+        'lstm_hidden_size': 174,
+        'lstm_bidirectional': True,
+        'lstm_dropout': 0.2689664397393872,
+        'lstm_num_layers': 3
+    }
 
-    learning_rate = 0.001
-    weight_decay = 7.5376105265396517e-05
+    learning_rate = 0.009728535043244946
+    weight_decay = 0.0003
 
-    class_weights_tensor = class_weights.to(device)
+    model = HybridModel(**hyperPARAMS).to(device)
+    class_weights_tensor = torch.FloatTensor(class_weights).to(device)
     criterion = nn.CrossEntropyLoss(weight=class_weights_tensor)
-    optimizer = optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
+    optimizer = optim.Adam(model.parameters(), lr=0.009728535043244946,
+                           weight_decay=7e-05)
+    model_name = 'hybrid'
 
-    model_name = 'bilstm'
-    history = train(model, train_loader, val_loader, criterion, optimizer, num_epochs=1000,
+    history = train(model, train_loader, val_loader, criterion, optimizer, num_epochs=250,
                     model_name=model_name)
     print('Model trained. Final validation accuracy:', history['val_acc'][-1])
 
