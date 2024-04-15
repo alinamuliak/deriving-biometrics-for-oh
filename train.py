@@ -26,8 +26,6 @@ if torch.cuda.is_available():
 else:
     device = 'cpu'
 
-print('Using device:', device)
-
 
 def train(model: torch.nn.Module, train_loader, val_loader, criterion, optimizer, num_epochs,
           model_name: str = 'bilstm-model') -> dict[str, list]:

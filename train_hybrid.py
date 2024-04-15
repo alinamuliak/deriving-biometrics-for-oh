@@ -1,5 +1,7 @@
+import argparse
 import json
 import os
+from pprint import pprint
 
 import torch
 import torch.nn as nn
@@ -10,9 +12,9 @@ import random
 import matplotlib.pyplot as plt
 from os.path import join
 
-from utils import load_data, stack_data, stack_windowed_data
+from utils import load_data, stack_windowed_data, check_max
 from dataset_loaders import create_dataloaders
-from models import CNNModel, LSTMModel, HybridModel
+from models import HybridModel
 
 seed = 7777777
 torch.manual_seed(seed)
@@ -23,9 +25,6 @@ if torch.cuda.is_available():
     torch.cuda.manual_seed_all(seed)
 else:
     device = 'cpu'
-
-print('Using device:', device)
-
 
 def train(model: torch.nn.Module, train_loader, val_loader, criterion, optimizer, num_epochs,
           model_name: str = 'bilstm-model') -> dict[str, list]:
@@ -109,86 +108,66 @@ def train(model: torch.nn.Module, train_loader, val_loader, criterion, optimizer
     return history
 
 
-if __name__ == '__main__':
+def main(args):
     data = load_data(file_path=join('data', 'W_AUGMENTED_DATA.json'))
-    # if model_name == 'cnn':
-    #     sequences, targets = stack_windowed_data(data)
-    #     train_loader, val_loader, test_loader, class_weights = create_dataloaders(sequences, targets, batch_size=64,
-    #                                                                               return_class_weights=True,
-    #                                                                               verbose=False)
-    #
-    #     model = CNNModel().to(device)
-    #     class_weights_tensor = torch.FloatTensor(class_weights).to(device)
-    #     criterion = nn.CrossEntropyLoss(weight=class_weights_tensor)
-    #     optimizer = optim.Adam(model.parameters(), lr=0.0097285,
-    #                            weight_decay=7.254576818661595e-05)
-
-    # sequences, targets = stack_data(data)
-    # train_loader, val_loader, test_loader, class_weights = create_dataloaders(sequences, targets, batch_size=64,
-    #                                                                           return_class_weights=True,
-    #                                                                           verbose=False)
-    #
-    # model = LSTMModel(lstm_hidden_size=275,
-    #                   lstm_dropout=0.6,
-    #                   lstm_num_layers=2,
-    #                   lstm_bidirectional=True).to(device)
-    #
-    # learning_rate = 0.001
-    # weight_decay = 5.870105951285154e-05
-    #
-    # class_weights_tensor = class_weights.to(device)
-    # criterion = nn.CrossEntropyLoss(weight=class_weights_tensor)
-    # optimizer = optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
-    #
-    # model_name = 'bilistm'
-
     sequences, targets = stack_windowed_data(data)
-    train_loader, val_loader, test_loader, class_weights = create_dataloaders(sequences, targets, batch_size=32,
+    train_loader, val_loader, test_loader, class_weights = create_dataloaders(sequences, targets,
+                                                                              batch_size=args.batch_size,
                                                                               return_class_weights=True,
                                                                               verbose=False)
 
-    hyperPARAMS = {'cnn_dropout': 0.25,
-                   'lstm_hidden_size': 200,
-                   'lstm_bidirectional': False,
-                   'lstm_dropout': 0.6,
-                   'lstm_num_layers': 2}
-    hyperPARAMS = {
-        'cnn_dropout': 0.388,
-        'n_conv_blocks': 2,
-        'cnn_out_channels': 32,
-        'lstm_hidden_size': 174,
-        'lstm_bidirectional': True,
-        'lstm_dropout': 0.2689664397393872,
-        'lstm_num_layers': 3
-    }
+    model = HybridModel(
+        n_conv_blocks=args.n_conv_blocks,
+        cnn_out_channels=args.cnn_out_channels,
+        cnn_dropout=args.cnn_dropout,
+        lstm_num_layers=args.lstm_num_layers,
+        lstm_hidden_size=args.lstm_hidden_size,
+        lstm_bidirectional=args.lstm_bidirectional,
+        lstm_dropout=args.lstm_dropout
+    ).to(device)
 
-    learning_rate = 0.009728535043244946
-    weight_decay = 0.0003
-
-    model = HybridModel(**hyperPARAMS).to(device)
     class_weights_tensor = torch.FloatTensor(class_weights).to(device)
     criterion = nn.CrossEntropyLoss(weight=class_weights_tensor)
-    optimizer = optim.Adam(model.parameters(), lr=0.009728535043244946,
-                           weight_decay=7e-05)
-    model_name = 'hybrid'
+    optimizer = optim.Adam(model.parameters(), lr=args.learning_rate, weight_decay=args.weight_decay)
 
-    history = train(model, train_loader, val_loader, criterion, optimizer, num_epochs=250,
-                    model_name=model_name)
+    history = train(model, train_loader, val_loader, criterion, optimizer, num_epochs=args.num_epochs,
+                    model_name=args.model_name)
     print('Model trained. Final validation accuracy:', history['val_acc'][-1])
 
-    fig, axs = plt.subplots(ncols=2, figsize=(10, 4))
-    axs[0].plot(history['train_loss'], label='Train Loss')
-    axs[0].plot(history['val_loss'], label='Validation Loss')
-    axs[0].set_xlabel('Epoch #')
-    axs[0].set_ylabel('Loss')
-    axs[0].legend()
 
-    axs[1].plot(history['train_acc'], label='Train Accuracy')
-    axs[1].plot(history['val_acc'], label='Validation Accuracy')
-    axs[1].set_xlabel('Epoch #')
-    axs[1].set_ylabel('Accuracy')
-    axs[1].legend()
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description="Train a model with given parameters.")
 
-    plt.tight_layout()
-    plt.savefig(os.path.join('models', 'plots', f'{model_name}.png'))
-    plt.show()
+    parser.add_argument("--n_conv_blocks", type=check_max, default=2,
+                        help="Number of convolutional blocks in the model. Maximum of 7.")
+    parser.add_argument("--cnn_out_channels", type=int, default=32,
+                        help="Output size of the convolution layers in the model.")
+    parser.add_argument("--cnn_dropout", type=float, default=0.388,
+                        help="Dropout probability between the CNN blocks.")
+
+    parser.add_argument("--lstm_bidirectional", action="store_true",
+                        help="If set, the model will be bidirectional.")
+    parser.add_argument("--lstm_num_layers", type=int, default=3,
+                        help="Number of layers in the LSTM.")
+    parser.add_argument("--lstm_hidden_size", type=int, default=174,
+                        help="Size of a hidden layer in the LSTM.")
+    parser.add_argument("--lstm_dropout", type=float, default=0.2689664397393872,
+                        help="Dropout probability between the LSTM layers.")
+
+    parser.add_argument("--learning_rate", type=float, default=0.009728535043244946,
+                        help="Learning rate for training the model.")
+    parser.add_argument("--weight_decay", type=float, default=7e-05,
+                        help="Weight decay in the optimizer.")
+    parser.add_argument("--num_epochs", type=int, default=250,
+                        help="Number of epochs to train the model.")
+    parser.add_argument("--verbose", action="store_true",
+                        help="If set, will print the information to the terminal.")
+    parser.add_argument("--model_name", type=str, default=None,
+                        help="Name of the model where the weights will be saved.")
+    args = parser.parse_args()
+
+    print("Training model with parameters:")
+    pprint(vars(args))
+    print("-" * 30)
+
+    main(args)

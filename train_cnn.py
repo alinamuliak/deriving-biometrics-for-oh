@@ -12,7 +12,7 @@ import random
 import matplotlib.pyplot as plt
 from os.path import join
 
-from utils import load_data, stack_data, stack_windowed_data
+from utils import load_data, stack_windowed_data, check_max
 from dataset_loaders import create_dataloaders, create_cnn_dataloaders
 from models import CNNModel, LSTMModel
 from train import train
@@ -26,13 +26,6 @@ if torch.cuda.is_available():
     torch.cuda.manual_seed_all(seed)
 else:
     device = 'cpu'
-
-
-def check_max(x):
-    x = int(x)
-    if x > 7:
-        raise argparse.ArgumentTypeError('Maximum allowed value for n_conv_blocks is 7.')
-    return x
 
 
 def main(args):

@@ -1,5 +1,5 @@
 """This module contains helper functions for working with the data."""
-
+import argparse
 import json
 import numpy as np
 
@@ -85,3 +85,13 @@ def stack_windowed_data(data: dict, window_size: int = 150, step_size: int = 75)
         sequence_labels.append(labels)
     return sequences, sequence_labels
 
+def check_max(x):
+    """
+    Checks if the provided value is in the range [0, 7]. Is used for argument parsing.
+    :param x:
+    :return:
+    """
+    x = int(x)
+    if x > 7:
+        raise argparse.ArgumentTypeError('Maximum allowed value for n_conv_blocks is 7.')
+    return x

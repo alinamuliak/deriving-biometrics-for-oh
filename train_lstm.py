@@ -30,8 +30,6 @@ if torch.cuda.is_available():
 else:
     device = 'cpu'
 
-print('Using device:', device)
-
 
 def main(args):
     data = load_data(file_path=join('data', 'W_AUGMENTED_DATA.json'))
