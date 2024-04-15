@@ -1,3 +1,17 @@
+<h1 align="center">Deriving Biometrics for Orthostatic Hypotension</h1>
+<p align="center"><i>The official implementation of Alina Muliak's Thesis under the supervision of Amar Basu submitted in fulfillment of the requirements
+for the degree of Bachelor of Science in the Department of Computer Sciences and Information Technologies Faculty of Applied Sciences.</i></p>
+
+<p align="center">
+  <img src="https://upload.wikimedia.org/wikipedia/commons/9/96/Pytorch_logo.png" alt="PyTorch logo" height="35" style="margin: 5px;"/>
+  <img src="https://upload.wikimedia.org/wikipedia/commons/0/05/Scikit_learn_logo_small.svg" alt="scikit-learn logo" height="40" style="margin: 5px;"/>
+  <img src="https://upload.wikimedia.org/wikipedia/commons/3/31/NumPy_logo_2020.svg" alt="NumPy logo" height="40" style="margin: 5px;"/>
+  <img src="https://optuna.org/assets/img/optuna-logo@2x.png" alt="Optuna logo" height="40" style="margin: 5px;"/>
+  <img src="https://upload.wikimedia.org/wikipedia/commons/1/1a/NumPy_logo.svg" alt="SciPy logo" height="40" style="margin: 5px;"/>
+  <img src="https://upload.wikimedia.org/wikipedia/commons/8/84/Matplotlib_icon.svg" alt="Matplotlib logo" height="40" style="margin: 5px;"/>
+</p>
+
+
 # Deriving Biometrics for Orthostatic Hypotension
 
 This repository is the official implementation of Bachelor Thesis on Deriving Biometrics for Orthostatic Hypotension (OH).
@@ -60,16 +74,6 @@ python train_lstm.py [-h] [--batch_size BATCH_SIZE] [--bidirectional] [--num_lay
                      [--verbose] [--model_name MODEL_NAME]
 ```
 
-### LSTMs
-To train the LSTM model, run this command:
-
-```train
-python train_lstm.py [-h] [--batch_size BATCH_SIZE] [--bidirectional] [--num_layers NUM_LAYERS]
-                     [--hidden_size HIDDEN_SIZE] [--dropout DROPOUT] [--learning_rate LEARNING_RATE]
-                     [--weight_decay WEIGHT_DECAY] [--num_epochs NUM_EPOCHS]
-                     [--verbose] [--model_name MODEL_NAME]
-```
-
 ### Hybrid CNN+LSTM
 To train the hybrid model, run this command:
 
@@ -116,12 +120,12 @@ The best model was hybrid, which achieved F1-score of 91.9% on the test dataset.
 | BiLSTM       | 84.4\%      | 85.7\%      |
 | Hybrid model | **91.4\%**  | **91.9\%**  |
 
-| Biometric MAE /</br> Model | OHV1        | OHV1 normalized | OHV2       | OHV2 normalized | OTC [sec]  | POT [bpm] |
-|----------------------------|-------------|-----------------|------------|-----------------|------------|-----------|
-| CNN                        | 344.98      | 0.16            | 574.8      | 0.21            | 9.72       | 17.18     |
-| UniLSTM                    | 379.54      | 0.14            | 195.35     | 0.06            | 6.86       | 20.76     |
-| BiLSTM                     | 194.54      | 0.09            | **55.0**   | **0.01**        | 20.51      | **11.48** |
-| Hybrid                     | **85.37**   | **0.07**        | 90.0       | 0.06            | **4.06**   | 16.52     |
+| Biometric MAE / Model | OHV1        | OHV1 normalized | OHV2       | OHV2 normalized | OTC [sec]  | POT [bpm] |
+|-----------------------|-------------|-----------------|------------|-----------------|------------|-----------|
+| CNN                   | 344.98      | 0.16            | 574.8      | 0.21            | 9.72       | 17.18     |
+| UniLSTM               | 379.54      | 0.14            | 195.35     | 0.06            | 6.86       | 20.76     |
+| BiLSTM                | 194.54      | 0.09            | **55.0**   | **0.01**        | 20.51      | **11.48** |
+| Hybrid                | **85.37**   | **0.07**        | 90.0       | 0.06            | **4.06**   | 16.52     |
 
 
 
