@@ -11,8 +11,7 @@ for the degree of Bachelor of Science in the Department of Computer Sciences and
   <img src="https://upload.wikimedia.org/wikipedia/commons/8/84/Matplotlib_icon.svg" alt="Matplotlib logo" height="40" style="margin: 5px;"/>
 </p>
 
-
-# Deriving Biometrics for Orthostatic Hypotension
+---
 
 This repository is the official implementation of Bachelor Thesis on Deriving Biometrics for Orthostatic Hypotension (OH).
 The proposed approach involves classifying the signals during stand-up tests into four phases: supine, transition,
