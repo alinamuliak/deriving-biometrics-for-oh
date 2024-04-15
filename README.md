@@ -26,7 +26,7 @@ To run and test our code, follow the steps below.
 
 ## Set up ⚙️
 
-- `git clone <repo> https://github.com/alinamuliak/deriving-biometrics-for-oh.git`
+- `git clone https://github.com/alinamuliak/deriving-biometrics-for-oh.git`
 - `cd deriving-biometrics-for-oh`
 - `pip install virtualenv`, if `virtualenv` is not installed yet
 - `virtualenv venv`
@@ -112,12 +112,12 @@ where the name of the file corresponds with the model used.
 The achieved performance metrics for each model are presented in the tables below.
 The best model was hybrid, which achieved F1-score of 91.9% on the test dataset.
 
-| Model        | Accuracy    | F1-score    |
-|--------------|-------------|-------------|
-| CNN          | 71.4\%      | 71.1\%      |
-| UniLSTM      | 86.0\%      | 86.9\%      |
-| BiLSTM       | 84.4\%      | 85.7\%      |
-| Hybrid model | **91.4\%**  | **91.9\%**  |
+| Model        | Accuracy  | F1-score  |
+|--------------|-----------|-----------|
+| CNN          | 71.4%     | 71.1%     |
+| UniLSTM      | 86.0%     | 86.9%     |
+| BiLSTM       | 84.4%     | 85.7%     |
+| Hybrid model | **91.4%** | **91.9%** |
 
 | Biometric MAE / Model | OHV1        | OHV1 normalized | OHV2       | OHV2 normalized | OTC [sec]  | POT [bpm] |
 |-----------------------|-------------|-----------------|------------|-----------------|------------|-----------|
@@ -129,9 +129,21 @@ The best model was hybrid, which achieved F1-score of 91.9% on the test dataset.
 
 
 ## Contributors
+<div style="text-align:center;">
 
-- [Alina Muliak](https://github.com/alinamuliak)
-- Amar Basu
+  <div style="display:inline-block; margin:10px;">
+    <img src="images/ucu_logo.png" alt="UCU Logo" style="max-width:200px; width:100%; height:auto;">
+    <br>
+    <span>Alina Muliak</span>
+  </div>
+
+  <div style="display:inline-block; margin:10px;">
+    <img src="images/wayne_logo.png" alt="Wayne Logo" style="max-width:125px; width:100%; height:auto;">
+    <br>
+    <span>Amar Basu</span>
+  </div>
+
+</div>
 
 ---
 💡 README template from [here](https://github.com/paperswithcode/releasing-research-code/blob/master/templates/README.md).
