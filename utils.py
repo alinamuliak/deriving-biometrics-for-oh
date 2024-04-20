@@ -2,6 +2,9 @@
 import argparse
 import json
 import numpy as np
+import torch.nn
+
+from models import LSTMModel, HybridModel, CNNModel
 
 
 def load_data(file_path: str = "data/DATA.json") -> dict:
@@ -59,6 +62,7 @@ def create_windows(signal_data, label_data, window_size, step_size) -> tuple[np.
 
 
 def stack_windowed_data(data: dict, window_size: int = 150, step_size: int = 75) -> tuple:
+    # todo: documentation
     """
     Create windows and stack the data.
     :param data:
@@ -95,3 +99,18 @@ def check_max(x):
     if x > 7:
         raise argparse.ArgumentTypeError('Maximum allowed value for n_conv_blocks is 7.')
     return x
+
+
+def check_model_type(model: torch.nn.Module, model_type: str):
+    """
+    Checks if the model instance is of the correct class.
+    :param model: model instance
+    :param model_type:
+    :return:
+    """
+    models_classes = {'cnn': CNNModel,
+                      'lstm': LSTMModel,
+                      'hybrid': HybridModel}
+
+    if not isinstance(model, models_classes[model_type]):
+        raise TypeError('Model type does not correspond to the loaded model!')
