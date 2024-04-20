@@ -6,57 +6,75 @@ import numpy as np
 from sklearn.metrics import mean_absolute_error
 
 
-def calculate_ohv1_mae(signals_for_biometrics: dict) -> float:
+def calculate_ohv1_mae(signals_for_biometrics: dict, on_normalized: bool = False) -> float:
     """
     Calculates the mean absolute error (MAE) between true and estimated Orthostatic Hypovolemia 1 (OHV1) biometric.
     :param signals_for_biometrics: A dictionary containing signals, true and estimated stages labels.
     :return: MAE of the OHV1.
     """
+    signal_name = 'ppg'
+    if on_normalized:
+        signal_name = 'ppg_normalized'
     ohv1_true_array, ohv1_pred_array = [], []
     for signal in signals_for_biometrics:
         try:
             mask = np.where(np.array(signal['true_labels']) == 0)
-            min_supine = min(signal['ppg'][mask])
+            min_supine = min(signal[signal_name][mask])
             mask = np.where(np.array(signal['true_labels']) == 2)
-            min_standing = min(signal['ppg'][mask])
-            ohv1_true = abs(min_standing - min_supine)
+            min_standing = min(signal[signal_name][mask])
+            ohv1_true = min_standing - min_supine
 
             mask = np.where(np.array(signal['predicted_labels']) == 0)
-            min_supine = min(signal['ppg'][mask])
+            if len(signal[signal_name][mask]) == 0:
+                continue
+
+            min_supine = min(signal[signal_name][mask])
             mask = np.where(np.array(signal['predicted_labels']) == 2)
-            min_standing = min(signal['ppg'][mask])
+            if len(signal[signal_name][mask]) == 0:
+                continue
+
+            min_standing = min(signal[signal_name][mask])
 
             ohv1_true_array.append(ohv1_true)
-            ohv1_pred_array.append(abs(min_standing - min_supine))
+            ohv1_pred_array.append(min_standing - min_supine)
         except ValueError:
             continue
 
     return mean_absolute_error(ohv1_true_array, ohv1_pred_array)
 
 
-def calculate_ohv2_mae(signas_for_biometrics: dict) -> float:
+def calculate_ohv2_mae(signas_for_biometrics: dict, on_normalized: bool = False) -> float:
     """
     Calculates the mean absolute error (MAE) between true and estimated Orthostatic Hypovolemia 2 (OHV2) biometric.
     :param signals_for_biometrics: A dictionary containing signals, true and estimated stages labels.
     :return: MAE of the OHV2.
     """
+    signal_name = 'ppg'
+    if on_normalized:
+        signal_name = 'ppg_normalized'
     ohv2_true_array, ohv2_pred_array = [], []
 
     for signal in signas_for_biometrics:
         try:
             mask = np.where(np.array(signal['true_labels']) == 0)
-            min_supine = min(signal['ppg'][mask])
+            min_supine = min(signal[signal_name][mask])
             mask = np.where(np.array(signal['true_labels']) == 3)
-            min_standing = min(signal['ppg'][mask])
-            ohv2_true = abs(min_standing - min_supine)
+            min_standing = min(signal[signal_name][mask])
+            ohv2_true = min_standing - min_supine
 
             mask = np.where(np.array(signal['predicted_labels']) == 0)
-            min_supine = min(signal['ppg'][mask])
+            if len(signal[signal_name][mask]) == 0:
+                continue
+
+            min_supine = min(signal[signal_name][mask])
             mask = np.where(np.array(signal['predicted_labels']) == 3)
-            min_standing = min(signal['ppg'][mask])
+            if len(signal[signal_name][mask]) == 0:
+                continue
+
+            min_standing = min(signal[signal_name][mask])
 
             ohv2_true_array.append(ohv2_true)
-            ohv2_pred_array.append(abs(min_standing - min_supine))
+            ohv2_pred_array.append(min_standing - min_supine)
         except ValueError:
             continue
 
@@ -107,17 +125,31 @@ def calculate_pot_mae(signals_for_biometrics):
             avg_supine = np.mean(signal['hr'][mask])
             mask = np.where((np.array(signal['true_labels']) == 2) | (np.array(signal['true_labels']) == 3))
             max_standing_orthostatis = max(signal['hr'][mask])
-            pot_true = abs(max_standing_orthostatis - avg_supine)
+            pot_true = max_standing_orthostatis - avg_supine
 
             mask = np.where(np.array(signal['predicted_labels']) == 0)
+            if len(signal['hr'][mask]) == 0:
+                continue
+
             avg_supine = np.mean(signal['hr'][mask])
             mask = np.where((np.array(signal['predicted_labels']) == 2) | (np.array(signal['predicted_labels']) == 3))
+            if len(signal['hr'][mask]) == 0:
+                continue
+
             max_standing_orthostatis = max(signal['hr'][mask])
 
             pot_true_array.append(pot_true)
-            pot_pred_array.append(abs(max_standing_orthostatis - avg_supine))
+            pot_pred_array.append(max_standing_orthostatis - avg_supine)
 
         except:
             continue
 
     return mean_absolute_error(pot_true_array, pot_pred_array)
+
+
+def calculate_mean_absolute_error_all(signals):
+    ohv1 = calculate_ohv1_mae(signals)
+    ohv2 = calculate_ohv2_mae(signals)
+    otc = calculate_otc_mae(signals)
+    pot = calculate_pot_mae(signals)
+    return ohv1, ohv2, otc, pot
