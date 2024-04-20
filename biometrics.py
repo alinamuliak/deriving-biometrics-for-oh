@@ -40,6 +40,9 @@ def calculate_ohv1_mae(signals_for_biometrics: dict, on_normalized: bool = False
         except ValueError:
             continue
 
+    if len(ohv1_true_array) == 0 or len(ohv1_pred_array) == 0:
+        return np.nan
+
     return mean_absolute_error(ohv1_true_array, ohv1_pred_array)
 
 
@@ -77,6 +80,8 @@ def calculate_ohv2_mae(signas_for_biometrics: dict, on_normalized: bool = False)
             ohv2_pred_array.append(min_standing - min_supine)
         except ValueError:
             continue
+    if len(ohv2_true_array) == 0 or len(ohv2_pred_array) == 0:
+        return np.nan
 
     return mean_absolute_error(ohv2_true_array, ohv2_pred_array)
 
@@ -105,6 +110,9 @@ def calculate_otc_mae(signals_for_biometrics: dict, sampling_rate: int = 50) -> 
             otc_pred_array.append(abs(orthostatis_archieved_at - start_transition) / sampling_rate)
         except ValueError:
             continue
+
+    if len(otc_true_array) == 0 or len(otc_pred_array) == 0:
+        return np.nan
 
     return mean_absolute_error(otc_true_array, otc_pred_array)
 
@@ -143,6 +151,9 @@ def calculate_pot_mae(signals_for_biometrics):
 
         except:
             continue
+
+    if len(pot_true_array) == 0 or len(pot_pred_array) == 0:
+        return np.nan
 
     return mean_absolute_error(pot_true_array, pot_pred_array)
 
