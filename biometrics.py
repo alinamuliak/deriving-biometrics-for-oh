@@ -46,7 +46,47 @@ def calculate_ohv1_mae(signals_for_biometrics: dict, on_normalized: bool = False
     return mean_absolute_error(ohv1_true_array, ohv1_pred_array)
 
 
-def calculate_ohv2_mae(signas_for_biometrics: dict, on_normalized: bool = False) -> float:
+def calculate_ohv1_percentage_error(signals_for_biometrics: dict) -> float:
+    """
+    Calculates the percentage error between true and estimated Orthostatic Hypovolemia 1 (OHV1) biometric.
+    :param signals_for_biometrics: A dictionary containing signals, true and estimated stages labels.
+    :return: percentage error of the OHV1.
+    """
+    signal_name = 'ppg'
+    ohv1_errors = []
+    for signal in signals_for_biometrics:
+        try:
+            mask = np.where(np.array(signal['true_labels']) == 0)
+            min_supine = min(signal[signal_name][mask])
+            mask = np.where(np.array(signal['true_labels']) == 2)
+            min_standing = min(signal[signal_name][mask])
+            ohv1_true = min_standing - min_supine
+
+            mask = np.where(np.array(signal['predicted_labels']) == 0)
+            if len(signal[signal_name][mask]) == 0:
+                continue
+
+            min_supine = min(signal[signal_name][mask])
+            mask = np.where(np.array(signal['predicted_labels']) == 2)
+            if len(signal[signal_name][mask]) == 0:
+                continue
+
+            min_standing = min(signal[signal_name][mask])
+            ohv1_pred = min_standing - min_supine
+
+            percentage_error = abs(ohv1_pred - ohv1_true) / ohv1_true
+            ohv1_errors.append(percentage_error)
+        except ValueError:
+            continue
+
+    if len(ohv1_errors) == 0:
+        return np.nan
+
+    return np.mean(ohv1_errors)
+
+
+
+def calculate_ohv2_mae(signals_for_biometrics: dict, on_normalized: bool = False) -> float:
     """
     Calculates the mean absolute error (MAE) between true and estimated Orthostatic Hypovolemia 2 (OHV2) biometric.
     :param signals_for_biometrics: A dictionary containing signals, true and estimated stages labels.
@@ -57,7 +97,7 @@ def calculate_ohv2_mae(signas_for_biometrics: dict, on_normalized: bool = False)
         signal_name = 'ppg_normalized'
     ohv2_true_array, ohv2_pred_array = [], []
 
-    for signal in signas_for_biometrics:
+    for signal in signals_for_biometrics:
         try:
             mask = np.where(np.array(signal['true_labels']) == 0)
             min_supine = min(signal[signal_name][mask])
@@ -84,6 +124,45 @@ def calculate_ohv2_mae(signas_for_biometrics: dict, on_normalized: bool = False)
         return np.nan
 
     return mean_absolute_error(ohv2_true_array, ohv2_pred_array)
+
+
+def calculate_ohv2_percentage_error(signals_for_biometrics: dict) -> float:
+    """
+    Calculates the percentage error between true and estimated Orthostatic Hypovolemia 2 (OHV2) biometric.
+    :param signals_for_biometrics: A dictionary containing signals, true and estimated stages labels.
+    :return: percentage error of the OHV2.
+    """
+    signal_name = 'ppg'
+    ohv2_errors = []
+
+    for signal in signals_for_biometrics:
+        try:
+            mask = np.where(np.array(signal['true_labels']) == 0)
+            min_supine = min(signal[signal_name][mask])
+            mask = np.where(np.array(signal['true_labels']) == 3)
+            min_standing = min(signal[signal_name][mask])
+            ohv2_true = min_standing - min_supine
+
+            mask = np.where(np.array(signal['predicted_labels']) == 0)
+            if len(signal[signal_name][mask]) == 0:
+                continue
+
+            min_supine = min(signal[signal_name][mask])
+            mask = np.where(np.array(signal['predicted_labels']) == 3)
+            if len(signal[signal_name][mask]) == 0:
+                continue
+
+            min_standing = min(signal[signal_name][mask])
+            ohv2_pred = min_standing - min_supine
+
+            percentage_error = abs(ohv2_pred - ohv2_true) / ohv2_true
+            ohv2_errors.append(percentage_error)
+        except ValueError:
+            continue
+    if len(ohv2_errors) == 0:
+        return np.nan
+
+    return np.mean(ohv2_errors)
 
 
 def calculate_otc_mae(signals_for_biometrics: dict, sampling_rate: int = 50) -> float:
@@ -115,6 +194,38 @@ def calculate_otc_mae(signals_for_biometrics: dict, sampling_rate: int = 50) -> 
         return np.nan
 
     return mean_absolute_error(otc_true_array, otc_pred_array)
+
+
+def calculate_otc_percentage_error(signals_for_biometrics: dict, sampling_rate: int = 50) -> float:
+    """
+    Calculates the percentage error between true and estimated
+    Orthostatic Time Constraint (OTC) biometric.
+
+    :param signals_for_biometrics: A dictionary containing signals, true and estimated stages labels.
+    :param sampling_rate: The sampling rate of the signals. Defaults to 50.
+    :return: Percentage error of the OTC.
+    """
+    otc_errors = []
+
+    for signal in signals_for_biometrics:
+        try:
+            start_transition = signal['true_labels'].index(1)
+            orthostatis_archieved_at = signal['true_labels'].index(2)
+            otc_true = abs(orthostatis_archieved_at - start_transition) / sampling_rate
+
+            start_transition = signal['predicted_labels'].index(1)
+            orthostatis_archieved_at = signal['predicted_labels'].index(2)
+            otc_pred = abs(orthostatis_archieved_at - start_transition) / sampling_rate
+
+            percentage_error = abs(otc_pred - otc_true) / otc_true
+            otc_errors.append(percentage_error)
+        except ValueError:
+            continue
+
+    if len(otc_errors) == 0:
+        return np.nan
+
+    return np.mean(otc_errors)
 
 
 def calculate_pot_mae(signals_for_biometrics):
@@ -158,9 +269,59 @@ def calculate_pot_mae(signals_for_biometrics):
     return mean_absolute_error(pot_true_array, pot_pred_array)
 
 
+def calculate_pot_percentage_error(signals_for_biometrics):
+    """
+    Calculates the percentage error between true and estimated
+    Postural Orthostatic Tachycardia (POT) biometric.
+
+    :param signals_for_biometrics: A dictionary containing signals, true and estimated stages labels.
+    :return: percentage error of the POT.
+    """
+
+    pot_errors = []
+    for signal in signals_for_biometrics:
+        try:
+            mask = np.where(np.array(signal['true_labels']) == 0)
+            avg_supine = np.mean(signal['hr'][mask])
+            mask = np.where((np.array(signal['true_labels']) == 2) | (np.array(signal['true_labels']) == 3))
+            max_standing_orthostatis = max(signal['hr'][mask])
+            pot_true = max_standing_orthostatis - avg_supine
+
+            mask = np.where(np.array(signal['predicted_labels']) == 0)
+            if len(signal['hr'][mask]) == 0:
+                continue
+
+            avg_supine = np.mean(signal['hr'][mask])
+            mask = np.where((np.array(signal['predicted_labels']) == 2) | (np.array(signal['predicted_labels']) == 3))
+            if len(signal['hr'][mask]) == 0:
+                continue
+
+            max_standing_orthostatis = max(signal['hr'][mask])
+            pot_pred = max_standing_orthostatis - avg_supine
+
+            percentage_error = abs(pot_pred - pot_true) / pot_true
+            pot_errors.append(percentage_error)
+
+        except:
+            continue
+
+    if len(pot_errors) == 0:
+        return np.nan
+
+    return np.mean(pot_errors)
+
+
 def calculate_mean_absolute_error_all(signals):
     ohv1 = calculate_ohv1_mae(signals)
     ohv2 = calculate_ohv2_mae(signals)
     otc = calculate_otc_mae(signals)
     pot = calculate_pot_mae(signals)
+    return ohv1, ohv2, otc, pot
+
+
+def calculate_percentage_error_all(signals):
+    ohv1 = calculate_ohv1_percentage_error(signals) * 100
+    ohv2 = calculate_ohv2_percentage_error(signals) * 100
+    otc = calculate_otc_percentage_error(signals) * 100
+    pot = calculate_pot_percentage_error(signals) * 100
     return ohv1, ohv2, otc, pot

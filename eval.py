@@ -8,12 +8,13 @@ import numpy as np
 from sklearn.metrics import f1_score, accuracy_score, confusion_matrix, ConfusionMatrixDisplay
 import matplotlib.pyplot as plt
 
-from biometrics import calculate_mean_absolute_error_all
+from biometrics import calculate_mean_absolute_error_all, calculate_percentage_error_all
 from dataset_loaders import create_dataloaders
 from utils import load_data, stack_windowed_data, stack_data, check_model_type
 
 
-def calculate_biometrics_error_for_windowed_data(test_loader, model, device: str = 'cpu', window_size: int = 150):
+def calculate_biometrics_error_for_windowed_data(test_loader, model, device: str = 'cpu',
+                                                 window_size: int = 150, step_size: float = 0.5):
     SIGNALS_FOR_BIOMETRICS_all = []
     NUMBER_OF_WINDOWS_PER_SIGNAL = 58
 
@@ -39,21 +40,21 @@ def calculate_biometrics_error_for_windowed_data(test_loader, model, device: str
             for i, (window, prediction) in enumerate(zip(windows, true_labels)):
 
                 signals_for_biometrics['ppg'] = np.append(signals_for_biometrics['ppg'],
-                                                          window.cpu()[3, :int(window_size * 0.5)])
+                                                          window.cpu()[3, :int(window_size * step_size)])
                 signals_for_biometrics['hr'] = np.append(signals_for_biometrics['hr'],
-                                                         window.cpu()[4, :int(window_size * 0.5)])
+                                                         window.cpu()[4, :int(window_size * step_size)])
                 signals_for_biometrics['ppg_normalized'] = np.append(signals_for_biometrics['ppg_normalized'],
-                                                                     window.cpu()[0, :int(window_size * 0.5)])
+                                                                     window.cpu()[0, :int(window_size * step_size)])
                 for _ in range(window_size - int(window_size * 0.5)):
                     signals_for_biometrics['true_labels'].append(prediction.item())
 
                 if i == len(windows) - 1:
                     signals_for_biometrics['ppg'] = np.append(signals_for_biometrics['ppg'],
-                                                              window.cpu()[3, int(window_size * 0.5):])
+                                                              window.cpu()[3, int(window_size * step_size):])
                     signals_for_biometrics['hr'] = np.append(signals_for_biometrics['hr'],
-                                                             window.cpu()[4, int(window_size * 0.5):])
+                                                             window.cpu()[4, int(window_size * step_size):])
                     signals_for_biometrics['ppg_normalized'] = np.append(signals_for_biometrics['ppg_normalized'],
-                                                                         window.cpu()[0, :int(window_size * 0.5)])
+                                                                         window.cpu()[0, :int(window_size * step_size)])
                     for _ in range(window_size - int(window_size * 0.5)):
                         signals_for_biometrics['true_labels'].append(prediction.item())
 
@@ -66,7 +67,7 @@ def calculate_biometrics_error_for_windowed_data(test_loader, model, device: str
                         signals_for_biometrics['predicted_labels'].append(prediction.item())
 
             SIGNALS_FOR_BIOMETRICS_all.append(signals_for_biometrics)
-    return calculate_mean_absolute_error_all(SIGNALS_FOR_BIOMETRICS_all)
+    return calculate_mean_absolute_error_all(SIGNALS_FOR_BIOMETRICS_all), calculate_percentage_error_all(SIGNALS_FOR_BIOMETRICS_all)
 
 
 def calculate_biometrics_error(test_loader, model, device: str = 'cpu'):
@@ -101,11 +102,11 @@ def calculate_biometrics_error(test_loader, model, device: str = 'cpu'):
 
             SIGNALS_FOR_BIOMETRICS_all.append(signals_for_biometrics)
 
-    return calculate_mean_absolute_error_all(SIGNALS_FOR_BIOMETRICS_all)
+    return calculate_mean_absolute_error_all(SIGNALS_FOR_BIOMETRICS_all), calculate_percentage_error_all(SIGNALS_FOR_BIOMETRICS_all)
 
 
-def print_results_as_table(accuracy: float, f1: float, ohv1: float, ohv2: float, otc: float, pot: float) -> None:
-    if np.any(np.isnan([ohv1, ohv2, otc, pot])):
+def print_results_as_table(accuracy: float, f1: float, biometrics_mae: list[float], biometrics_mpe: list[float]) -> None:
+    if np.any(np.isnan(biometrics_mae)) or np.any(np.isnan(biometrics_mpe)):
         print('\nNOTE: Some of the evaluation metrics were nan. '
               'It is allowed behavior which typically means that '
               'the model does not classify the phases needed for the metrics calculation at all.')
@@ -114,10 +115,15 @@ def print_results_as_table(accuracy: float, f1: float, ohv1: float, ohv2: float,
     print(tabulate([
         ['Accuracy', f'{round(accuracy * 100, 2)}%'],
         ['F1 score', f'{round(f1 * 100, 2)}%'],
-        ['OHV1 MAE', f'{round(ohv1, 2)} a.u.'],
-        ['OHV2 MAE', f'{round(ohv2, 2)} a.u.'],
-        ['OTC MAE',  f'{round(otc, 2)} sec'],
-        ['POT MAE',  f'{round(pot, 2)} bpm']
+        ['OHV1 MAE', f'{round(biometrics_mae[0], 2)} a.u.'],
+        ['OHV2 MAE', f'{round(biometrics_mae[1], 2)} a.u.'],
+        ['OTC MAE',  f'{round(biometrics_mae[2], 2)} sec'],
+        ['POT MAE',  f'{round(biometrics_mae[3], 2)} bpm'],
+
+        ['OHV1 MPE', f'{round(biometrics_mpe[0], 2)} %'],
+        ['OHV2 MPE', f'{round(biometrics_mpe[1], 2)} %'],
+        ['OTC MPE',  f'{round(biometrics_mpe[2], 2)} %'],
+        ['POT MPE',  f'{round(biometrics_mpe[3], 2)} %']
     ], headers=['Metric', 'Value'], tablefmt='orgtbl'))
 
 
@@ -151,8 +157,8 @@ def eval_models_windowed_data(model, batch_size: int, device: str = 'cpu', save_
         disp.plot(ax=ax, cmap=plt.cm.Blues)
         fig.savefig(f'{save_plots_to}/confusion-matrix.png', bbox_inches='tight')
 
-    ohv1, ohv2, otc, pot = calculate_biometrics_error_for_windowed_data(test_loader, model, device)
-    print_results_as_table(accuracy, f1, ohv1, ohv2, otc, pot)
+    biometrics_mae, biometrics_mpe = calculate_biometrics_error_for_windowed_data(test_loader, model, device)
+    print_results_as_table(accuracy, f1, biometrics_mae, biometrics_mpe)
 
 
 def eval_lstm(model, batch_size: int, device: str = 'cpu', save_plots_to: str | None = None):
@@ -184,8 +190,8 @@ def eval_lstm(model, batch_size: int, device: str = 'cpu', save_plots_to: str | 
         disp.plot(ax=ax, cmap=plt.cm.Blues)
         fig.savefig(f'{save_plots_to}/confusion-matrix.png', bbox_inches='tight')
 
-    ohv1, ohv2, otc, pot = calculate_biometrics_error(test_loader, model, device)
-    print_results_as_table(accuracy, f1, ohv1, ohv2, otc, pot)
+    biometrics_mae, biometrics_mpe = calculate_biometrics_error_for_windowed_data(test_loader, model, device)
+    print_results_as_table(accuracy, f1, biometrics_mae, biometrics_mpe)
 
 
 def main(args):
@@ -202,6 +208,7 @@ def main(args):
     elif args.model_type == 'lstm':
         model = torch.load(args.chkpt_path, map_location=args.device)
         check_model_type(model, args.model_type)
+
         eval_lstm(model, args.batch_size, args.device, args.save_plots_to)
 
 
