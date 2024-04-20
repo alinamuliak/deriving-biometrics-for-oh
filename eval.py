@@ -190,7 +190,7 @@ def eval_lstm(model, batch_size: int, device: str = 'cpu', save_plots_to: str | 
         disp.plot(ax=ax, cmap=plt.cm.Blues)
         fig.savefig(f'{save_plots_to}/confusion-matrix.png', bbox_inches='tight')
 
-    biometrics_mae, biometrics_mpe = calculate_biometrics_error_for_windowed_data(test_loader, model, device)
+    biometrics_mae, biometrics_mpe = calculate_biometrics_error(test_loader, model, device)
     print_results_as_table(accuracy, f1, biometrics_mae, biometrics_mpe)
 
 
