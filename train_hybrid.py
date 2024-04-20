@@ -158,6 +158,8 @@ if __name__ == '__main__':
                         help="Learning rate for training the model.")
     parser.add_argument("--weight_decay", type=float, default=7e-05,
                         help="Weight decay in the optimizer.")
+    parser.add_argument("--batch_size", type=float, default=32,
+                        help="Batch size for training the model.")
     parser.add_argument("--num_epochs", type=int, default=250,
                         help="Number of epochs to train the model.")
     parser.add_argument("--verbose", action="store_true",
