@@ -22,7 +22,7 @@ def calculate_ohv1_mae(signals_for_biometrics: dict, on_normalized: bool = False
             min_supine = min(signal[signal_name][mask])
             mask = np.where(np.array(signal['true_labels']) == 2)
             min_standing = min(signal[signal_name][mask])
-            ohv1_true = min_standing - min_supine
+            ohv1_true = abs(min_standing - min_supine)
 
             mask = np.where(np.array(signal['predicted_labels']) == 0)
             if len(signal[signal_name][mask]) == 0:
@@ -36,7 +36,7 @@ def calculate_ohv1_mae(signals_for_biometrics: dict, on_normalized: bool = False
             min_standing = min(signal[signal_name][mask])
 
             ohv1_true_array.append(ohv1_true)
-            ohv1_pred_array.append(min_standing - min_supine)
+            ohv1_pred_array.append(abs(min_standing - min_supine))
         except ValueError:
             continue
 
@@ -60,7 +60,7 @@ def calculate_ohv1_percentage_error(signals_for_biometrics: dict) -> float:
             min_supine = min(signal[signal_name][mask])
             mask = np.where(np.array(signal['true_labels']) == 2)
             min_standing = min(signal[signal_name][mask])
-            ohv1_true = min_standing - min_supine
+            ohv1_true = abs(min_standing - min_supine)
 
             mask = np.where(np.array(signal['predicted_labels']) == 0)
             if len(signal[signal_name][mask]) == 0:
@@ -72,7 +72,7 @@ def calculate_ohv1_percentage_error(signals_for_biometrics: dict) -> float:
                 continue
 
             min_standing = min(signal[signal_name][mask])
-            ohv1_pred = min_standing - min_supine
+            ohv1_pred = abs(min_standing - min_supine)
 
             percentage_error = abs(ohv1_pred - ohv1_true) / ohv1_true
             ohv1_errors.append(percentage_error)
@@ -103,7 +103,7 @@ def calculate_ohv2_mae(signals_for_biometrics: dict, on_normalized: bool = False
             min_supine = min(signal[signal_name][mask])
             mask = np.where(np.array(signal['true_labels']) == 3)
             min_standing = min(signal[signal_name][mask])
-            ohv2_true = min_standing - min_supine
+            ohv2_true = abs(min_standing - min_supine)
 
             mask = np.where(np.array(signal['predicted_labels']) == 0)
             if len(signal[signal_name][mask]) == 0:
@@ -117,7 +117,7 @@ def calculate_ohv2_mae(signals_for_biometrics: dict, on_normalized: bool = False
             min_standing = min(signal[signal_name][mask])
 
             ohv2_true_array.append(ohv2_true)
-            ohv2_pred_array.append(min_standing - min_supine)
+            ohv2_pred_array.append(abs(min_standing - min_supine))
         except ValueError:
             continue
     if len(ohv2_true_array) == 0 or len(ohv2_pred_array) == 0:
@@ -141,7 +141,7 @@ def calculate_ohv2_percentage_error(signals_for_biometrics: dict) -> float:
             min_supine = min(signal[signal_name][mask])
             mask = np.where(np.array(signal['true_labels']) == 3)
             min_standing = min(signal[signal_name][mask])
-            ohv2_true = min_standing - min_supine
+            ohv2_true = abs(min_standing - min_supine)
 
             mask = np.where(np.array(signal['predicted_labels']) == 0)
             if len(signal[signal_name][mask]) == 0:
@@ -153,7 +153,7 @@ def calculate_ohv2_percentage_error(signals_for_biometrics: dict) -> float:
                 continue
 
             min_standing = min(signal[signal_name][mask])
-            ohv2_pred = min_standing - min_supine
+            ohv2_pred = abs(min_standing - min_supine)
 
             percentage_error = abs(ohv2_pred - ohv2_true) / ohv2_true
             ohv2_errors.append(percentage_error)
@@ -244,7 +244,7 @@ def calculate_pot_mae(signals_for_biometrics):
             avg_supine = np.mean(signal['hr'][mask])
             mask = np.where((np.array(signal['true_labels']) == 2) | (np.array(signal['true_labels']) == 3))
             max_standing_orthostatis = max(signal['hr'][mask])
-            pot_true = max_standing_orthostatis - avg_supine
+            pot_true = abs(max_standing_orthostatis - avg_supine)
 
             mask = np.where(np.array(signal['predicted_labels']) == 0)
             if len(signal['hr'][mask]) == 0:
@@ -258,7 +258,7 @@ def calculate_pot_mae(signals_for_biometrics):
             max_standing_orthostatis = max(signal['hr'][mask])
 
             pot_true_array.append(pot_true)
-            pot_pred_array.append(max_standing_orthostatis - avg_supine)
+            pot_pred_array.append(abs(max_standing_orthostatis - avg_supine))
 
         except:
             continue
@@ -285,7 +285,7 @@ def calculate_pot_percentage_error(signals_for_biometrics):
             avg_supine = np.mean(signal['hr'][mask])
             mask = np.where((np.array(signal['true_labels']) == 2) | (np.array(signal['true_labels']) == 3))
             max_standing_orthostatis = max(signal['hr'][mask])
-            pot_true = max_standing_orthostatis - avg_supine
+            pot_true = abs(max_standing_orthostatis - avg_supine)
 
             mask = np.where(np.array(signal['predicted_labels']) == 0)
             if len(signal['hr'][mask]) == 0:
@@ -297,7 +297,7 @@ def calculate_pot_percentage_error(signals_for_biometrics):
                 continue
 
             max_standing_orthostatis = max(signal['hr'][mask])
-            pot_pred = max_standing_orthostatis - avg_supine
+            pot_pred = abs(max_standing_orthostatis - avg_supine)
 
             percentage_error = abs(pot_pred - pot_true) / pot_true
             pot_errors.append(percentage_error)
