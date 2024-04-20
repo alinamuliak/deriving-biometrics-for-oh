@@ -80,7 +80,7 @@ def train(model: torch.nn.Module, train_loader, val_loader, criterion, optimizer
         if avg_val_loss < best_val_loss:
             best_epoch = epoch
             best_val_loss = avg_val_loss
-            torch.save(model.state_dict(), os.path.join('models', f'{model_name}.pt'))
+            torch.save(model, os.path.join('models', f'{model_name}.pt'))
 
             with open(os.path.join('models', 'history', f'{model_name}.json'), 'w', encoding='utf-8') as f:
                 json.dump(history, f, ensure_ascii=False, indent=4)

@@ -72,7 +72,7 @@ if __name__ == '__main__':
     parser.add_argument("--verbose", action="store_true",
                         help="If set, will print the information to the terminal.")
     parser.add_argument("--model_name", type=str, default=None,
-                        help="Name of the model where the weights will be saved.")
+                        help="If provided, the name of the file where the model weights will be saved.")
     args = parser.parse_args()
     print("Training model with parameters:")
     pprint(vars(args))

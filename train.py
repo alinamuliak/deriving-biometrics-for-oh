@@ -1,5 +1,6 @@
 import json
 import os
+import time
 
 import torch
 import torch.nn as nn
@@ -10,7 +11,8 @@ import random
 import matplotlib.pyplot as plt
 from os.path import join
 
-from torch.optim.lr_scheduler import StepLR
+from typing import Callable
+from torch.utils.data import DataLoader
 
 from utils import load_data, stack_data, stack_windowed_data
 from dataset_loaders import create_dataloaders
@@ -27,11 +29,33 @@ else:
     device = 'cpu'
 
 
-def train(model: torch.nn.Module, train_loader, val_loader, criterion, optimizer, num_epochs,
-          model_name: str = 'bilstm-model') -> dict[str, list]:
+def train(model: torch.nn.Module,
+          train_loader: DataLoader,
+          val_loader: DataLoader,
+          criterion: Callable,
+          optimizer: torch.optim.Optimizer,
+          num_epochs: int = 100,
+          verbose: bool = True,
+          model_name: str | None = None) -> dict[str, list]:
+    """
+    Train and validate the model using the provided dataloaders.
+    Return the dictionary containing the history of the training and validation loss and accuracy metrics.
+
+    :param model: torch.nn.Module instance to be trained.
+    :param train_loader: Dataloader for the training.
+    :param val_loader: Dataloader for the validation.
+    :param criterion: Loss function to be used.
+    :param optimizer: Optimizer to be used.
+    :param num_epochs: Number of epochs to train. Default: 100.
+    :param verbose: Whether to print the training details. Default: True.
+    :param model_name: If provided, the model weights will be saved to the <model_name>.pt file.
+    :return: A dictionary with the history of the training and validation loss and accuracy.
+    """
     best_val_loss = float('inf')
     best_epoch = 0
     history = {"train_loss": [], "train_acc": [], "val_loss": [], "val_acc": []}
+    os.makedirs("models/history", exist_ok=True)
+    os.makedirs("models/plots", exist_ok=True)
 
     for epoch in range(num_epochs):
         train_losses, train_acc = [], []
@@ -74,90 +98,91 @@ def train(model: torch.nn.Module, train_loader, val_loader, criterion, optimizer
         avg_val_accuracy = np.mean(val_acc)
         history['val_acc'].append(avg_val_accuracy)
 
-        if epoch % 10 == 0:
+        if epoch % 10 == 0 and verbose:
             print(f'Epoch [{epoch}/{num_epochs}]: Train Loss: {round(avg_train_loss, 3)}, '
                   f'Validation Loss: {round(avg_val_loss, 3)}, Val Accuracy: {round(avg_val_accuracy, 3)}')
 
         if avg_val_loss < best_val_loss:
             best_epoch = epoch
             best_val_loss = avg_val_loss
-            torch.save(model.state_dict(), os.path.join('models', f'{model_name}.pt'))
+            if model_name is not None:
+                torch.save(model, os.path.join('models', f'{model_name}.pt'))
 
-            with open(os.path.join('models', 'history', f'{model_name}.json'), 'w', encoding='utf-8') as f:
-                json.dump(history, f, ensure_ascii=False, indent=4)
+                with open(os.path.join('models', 'history', f'{model_name}.json'), 'w', encoding='utf-8') as f:
+                    json.dump(history, f, ensure_ascii=False, indent=4)
 
-            fig, axs = plt.subplots(ncols=2, figsize=(10, 4))
-            axs[0].plot(history['train_loss'], label='Train Loss')
-            axs[0].plot(history['val_loss'], label='Validation Loss')
-            axs[0].set_xlabel('Epoch #')
-            axs[0].set_ylabel('Loss')
+                if verbose:
+                    fig, axs = plt.subplots(ncols=2, figsize=(10, 4))
+                    axs[0].plot(history['train_loss'], label='Train Loss')
+                    axs[0].plot(history['val_loss'], label='Validation Loss')
+                    axs[0].set_xlabel('Epoch #')
+                    axs[0].set_ylabel('Loss')
 
-            axs[1].plot(history['train_acc'], label='Train Accuracy')
-            axs[1].plot(history['val_acc'], label='Validation Accuracy')
-            axs[1].set_xlabel('Epoch #')
-            axs[1].set_ylabel('Accuracy')
-            plt.tight_layout()
-            plt.legend()
-            plt.savefig(os.path.join('models', 'plots', f'{model_name}.png'))
-            plt.close()
+                    axs[1].plot(history['train_acc'], label='Train Accuracy')
+                    axs[1].plot(history['val_acc'], label='Validation Accuracy')
+                    axs[1].set_xlabel('Epoch #')
+                    axs[1].set_ylabel('Accuracy')
+                    plt.tight_layout()
+                    plt.legend()
+                    plt.savefig(os.path.join('models', 'plots', f'{model_name}.png'))
+                    plt.close()
 
-            print(f'* Epoch [{epoch}/{num_epochs}]: Train Loss: {round(avg_train_loss, 3)}, '
-                  f'Validation Loss: {round(avg_val_loss, 3)}, Val Accuracy: {round(avg_val_accuracy, 3)}')
+                    print(f'* Epoch [{epoch}/{num_epochs}]: Train Loss: {round(avg_train_loss, 3)}, '
+                          f'Validation Loss: {round(avg_val_loss, 3)}, Val Accuracy: {round(avg_val_accuracy, 3)}')
 
-    print('Best epoch:', best_epoch, 'with validation loss:', best_val_loss)
+    if verbose:
+        print('Best epoch:', best_epoch, 'with validation loss:', best_val_loss)
 
     return history
 
 
-if __name__ == '__main__':
-    data = load_data(file_path=join('data', 'W_AUGMENTED_DATA.json'))
-    # if model_name == 'cnn':
-    #     sequences, targets = stack_windowed_data(data)
-    #     train_loader, val_loader, test_loader, class_weights = create_dataloaders(sequences, targets, batch_size=64,
-    #                                                                               return_class_weights=True,
-    #                                                                               verbose=False)
-    #
-    #     model = CNNModel().to(device)
-    #     class_weights_tensor = torch.FloatTensor(class_weights).to(device)
-    #     criterion = nn.CrossEntropyLoss(weight=class_weights_tensor)
-    #     optimizer = optim.Adam(model.parameters(), lr=0.0097285,
-    #                            weight_decay=7.254576818661595e-05)
 
-    sequences, targets = stack_data(data)
-    train_loader, val_loader, test_loader, class_weights = create_dataloaders(sequences, targets, batch_size=64,
-                                                                              return_class_weights=True,
-                                                                              verbose=False)
-
-    model = LSTMModel(lstm_hidden_size=200,
-                      lstm_dropout=0.65,
-                      lstm_num_layers=2,
-                      lstm_bidirectional=True).to(device)
-
-    learning_rate = 0.001
-    weight_decay = 7.5376105265396517e-05
-
-    class_weights_tensor = class_weights.to(device)
-    criterion = nn.CrossEntropyLoss(weight=class_weights_tensor)
-    optimizer = optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
-
-    model_name = 'bilstm'
-    history = train(model, train_loader, val_loader, criterion, optimizer, num_epochs=1000,
-                    model_name=model_name)
-    print('Model trained. Final validation accuracy:', history['val_acc'][-1])
-
-    fig, axs = plt.subplots(ncols=2, figsize=(10, 4))
-    axs[0].plot(history['train_loss'], label='Train Loss')
-    axs[0].plot(history['val_loss'], label='Validation Loss')
-    axs[0].set_xlabel('Epoch #')
-    axs[0].set_ylabel('Loss')
-    axs[0].legend()
-
-    axs[1].plot(history['train_acc'], label='Train Accuracy')
-    axs[1].plot(history['val_acc'], label='Validation Accuracy')
-    axs[1].set_xlabel('Epoch #')
-    axs[1].set_ylabel('Accuracy')
-    axs[1].legend()
-
-    plt.tight_layout()
-    plt.savefig(os.path.join('models', 'plots', f'{model_name}.png'))
-    plt.show()
+# if __name__ == '__main__':
+#     data = load_data(file_path=join('data', 'W_AUGMENTED_DATA.json'))
+#
+#     sequences, targets = stack_data(data)
+#     train_loader, val_loader, test_loader, class_weights = create_dataloaders(sequences, targets, batch_size=64,
+#                                                                               return_class_weights=True,
+#                                                                               verbose=False)
+#
+#     model = LSTMModel(lstm_hidden_size=200,
+#                       lstm_dropout=0.65,
+#                       lstm_num_layers=2,
+#                       lstm_bidirectional=True).to(device)
+#     learning_rate = 0.001
+#     weight_decay = 7.5376105265396517e-05
+#
+#     # model = LSTMModel(lstm_hidden_size=231,
+#     #                   lstm_dropout=0.5830300061685474,
+#     #                   lstm_num_layers=2,
+#     #                   lstm_bidirectional=False).to(device)
+#     #
+#     # learning_rate =
+#     # weight_decay =
+#
+#
+#     class_weights_tensor = class_weights.to(device)
+#     criterion = nn.CrossEntropyLoss(weight=class_weights_tensor)
+#     optimizer = optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
+#
+#     model_name = 'test'
+#     history = train(model, train_loader, val_loader, criterion, optimizer, num_epochs=1000,
+#                     model_name=model_name)
+#     print('Model trained. Final validation accuracy:', history['val_acc'][-1])
+#
+#     fig, axs = plt.subplots(ncols=2, figsize=(10, 4))
+#     axs[0].plot(history['train_loss'], label='Train Loss')
+#     axs[0].plot(history['val_loss'], label='Validation Loss')
+#     axs[0].set_xlabel('Epoch #')
+#     axs[0].set_ylabel('Loss')
+#     axs[0].legend()
+#
+#     axs[1].plot(history['train_acc'], label='Train Accuracy')
+#     axs[1].plot(history['val_acc'], label='Validation Accuracy')
+#     axs[1].set_xlabel('Epoch #')
+#     axs[1].set_ylabel('Accuracy')
+#     axs[1].legend()
+#
+#     plt.tight_layout()
+#     plt.savefig(os.path.join('models', 'plots', f'{model_name}.png'))
+#     plt.show()
