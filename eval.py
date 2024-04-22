@@ -1,17 +1,19 @@
 import argparse
-import sys
-from pprint import pprint
-
+import random
 import torch
 from tabulate import tabulate
 import numpy as np
 from sklearn.metrics import f1_score, accuracy_score, confusion_matrix, ConfusionMatrixDisplay
 import matplotlib.pyplot as plt
-
 from biometrics import calculate_mean_absolute_error_all, calculate_percentage_error_all
 from dataset_loaders import create_dataloaders
 from utils import load_data, stack_windowed_data, stack_data, check_model_type
 
+
+seed = 7777777
+torch.manual_seed(seed)
+np.random.seed(seed)
+random.seed(seed)
 
 def calculate_biometrics_error_for_windowed_data(test_loader, model, device: str = 'cpu',
                                                  window_size: int = 150, step_size: float = 0.5):
@@ -199,6 +201,9 @@ def main(args):
         args.device = 'cpu'
         print('CUDA is not available. Falling back to CPU.')
 
+    if args.device == 'cuda':
+        torch.cuda.manual_seed_all(seed)
+
     if args.model_type in ['cnn', 'hybrid']:
         model = torch.load(args.chkpt_path, map_location=args.device)
         check_model_type(model, args.model_type)
@@ -225,11 +230,13 @@ if __name__ == '__main__':
                         help="Batch size used for training the model.")
 
     parser.add_argument("--device", type=str, required=False, default='cuda',
+                        choices=['cuda', 'cpu', 'mps'],
                         help="Device to be used for the dataloader and model.")
     parser.add_argument("--save_plots_to", type=str, required=False, default=None,
                         help="Path to save plots. If not specified, the plots are not saved.")
 
     args = parser.parse_args()
+
 
     print("Evaluating...", end=" ")
 
