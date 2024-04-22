@@ -36,6 +36,7 @@ To run and test our code, follow the steps below.
 - Navigate to [git-lfs.com](https://git-lfs.com/) and click **Download**.
 - `git lfs install`
 - `git lfs pull`
+
 If you have CUDA available on your laptop, download `torch` from the [PyTorch official site](https://pytorch.org/get-started/locally/),
 choosing your specific settings. If the CUDA is available, it will be used by default. Otherwise, the CPU will be used.
 For instance, using Windows with CUDA 11.8, execute:
