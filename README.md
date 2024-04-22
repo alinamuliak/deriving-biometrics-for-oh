@@ -120,6 +120,7 @@ The achieved performance metrics for each model are presented in the tables belo
 The best model was hybrid, which achieved F1-score of 91.9% on the test dataset.
 
 #### Accuracy
+
 | Model        | Accuracy  | F1-score  |
 |--------------|-----------|-----------|
 | CNN          | 71.4%     | 71.1%     |
@@ -128,6 +129,7 @@ The best model was hybrid, which achieved F1-score of 91.9% on the test dataset.
 | Hybrid model | **91.3%** | **91.8%** |
 
 #### Biometrics Mean Absolute Errors
+
 | **Model**   | **OHV1 MAE [a. u.]** | **OHV2 MAE [a. u.]** | **OTC MAE [sec]** | **POT MAE [bpm]** |
 |-------------|----------------------|----------------------|-------------------|-------------------|
 | **CNN**     | 315.44               | 441.79               | 8.43              | 15.84             |
@@ -136,6 +138,7 @@ The best model was hybrid, which achieved F1-score of 91.9% on the test dataset.
 | **Hybrid**  | **54.32**            | 64.5                 | **3.39**          | 11.88             |
 
 #### Biometrics Mean Percentage Errors
+
 | **Model**   | **OHV1 MPE** | **OHV2 MPE** | **OTC MPE** | **POT MPE** |
 |-------------|--------------|--------------|-------------|-------------|
 | **CNN**     | 130.7%       | 802.77%      | 40.98%      | 64.74%      |
