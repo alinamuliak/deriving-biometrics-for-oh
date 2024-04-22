@@ -25,6 +25,7 @@ To run and test our code, follow the steps below.
 
 
 ## Set up ⚙️
+<mark> add info about python version </mark>
 
 - `git clone https://github.com/alinamuliak/deriving-biometrics-for-oh.git`
 - `cd deriving-biometrics-for-oh`
@@ -32,7 +33,9 @@ To run and test our code, follow the steps below.
 - `virtualenv venv`
 - `source venv/bin/activate` on Unix system; `venv\Scripts\activate` on Windows
 - `pip install -r requirements.txt`
-
+- Navigate to [git-lfs.com](https://git-lfs.com/) and click **Download**.
+- `git lfs install`
+- `git lfs pull`
 If you have CUDA available on your laptop, download `torch` from the [PyTorch official site](https://pytorch.org/get-started/locally/),
 choosing your specific settings. If the CUDA is available, it will be used by default. Otherwise, the CPU will be used.
 For instance, using Windows with CUDA 11.8, execute:
