@@ -92,10 +92,14 @@ python train_hybrid.py [-h] [--n_conv_blocks N_CONV_BLOCKS] [--cnn_out_channels 
 To evaluate the model on test dataset, run:
 
 ```eval
-python eval.py [-h] --model_type {cnn,lstm,hybrid} --model_path MODEL_PATH --batch_size BATCH_SIZE
+python eval.py [-h] --model_type {cnn,lstm,hybrid} --chkpt_path CHECKPOINT_PATH --batch_size BATCH_SIZE [--device {cuda,cpu,mps}] [--save_plots_to SAVE_PLOTS_TO]
 ```
-
->📋  Describe how to evaluate the trained models on benchmarks reported in the paper, give commands that produce the results (section below).
+To evaluate models, implemented in the Thesis, specify the checkpoint path of the predefined models
+located in `models` directory along with the batch size specified below. For instance,
+```eval
+python eval.py --model_type hybrid --chkpt_path models/hybrid.pt --batch_size 32
+```
+After evaluation is done, a table containing accuracy, f1-score, MAE and MPE will be printed.
 
 ## Pre-trained Models
 
@@ -115,38 +119,34 @@ where the name of the file corresponds with the model used.
 The achieved performance metrics for each model are presented in the tables below.
 The best model was hybrid, which achieved F1-score of 91.9% on the test dataset.
 
+#### Accuracy
 | Model        | Accuracy  | F1-score  |
 |--------------|-----------|-----------|
 | CNN          | 71.4%     | 71.1%     |
 | UniLSTM      | 86.0%     | 86.9%     |
-| BiLSTM       | 84.4%     | 85.7%     |
-| Hybrid model | **91.4%** | **91.9%** |
+| BiLSTM       | 84.6%     | 85.8%     |
+| Hybrid model | **91.3%** | **91.8%** |
 
-| Biometric MAE / Model | OHV1        | OHV1 normalized | OHV2       | OHV2 normalized | OTC [sec]  | POT [bpm] |
-|-----------------------|-------------|-----------------|------------|-----------------|------------|-----------|
-| CNN                   | 344.98      | 0.16            | 574.8      | 0.21            | 9.72       | 17.18     |
-| UniLSTM               | 379.54      | 0.14            | 195.35     | 0.06            | 6.86       | 20.76     |
-| BiLSTM                | 194.54      | 0.09            | **55.0**   | **0.01**        | 20.51      | **11.48** |
-| Hybrid                | **85.37**   | **0.07**        | 90.0       | 0.06            | **4.06**   | 16.52     |
+#### Biometrics Mean Absolute Errors
+| **Model**   | **OHV1 MAE [a. u.]** | **OHV2 MAE [a. u.]** | **OTC MAE [sec]** | **POT MAE [bpm]** |
+|-------------|----------------------|----------------------|-------------------|-------------------|
+| **CNN**     | 315.44               | 441.79               | 8.43              | 15.84             |
+| **UniLSTM** | 303.75               | 179.28               | 6.82              | 21.14             |
+| **BiLSTM**  | 220.07               | **63.0**             | 21.24             | **5.94**          |
+| **Hybrid**  | **54.32**            | 64.5                 | **3.39**          | 11.88             |
 
+#### Biometrics Mean Percentage Errors
+| **Model**   | **OHV1 MPE** | **OHV2 MPE** | **OTC MPE** | **POT MPE** |
+|-------------|--------------|--------------|-------------|-------------|
+| **CNN**     | 130.7%       | 802.77%      | 40.98%      | 64.74%      |
+| **UniLSTM** | 350.71%      | 88.48%       | 38.37%      | 112.28%     |
+| **BiLSTM**  | 439.48%      | **4.4%**     | 162.0%      | **25.56%**  |
+| **Hybrid**  | **9.76%**    | 16.94%       | **14.8%**   | 53.48%      |
 
 
 ## Contributors
-<div style="text-align:center;">
-
-  <div style="display:inline-block; margin:10px;">
-    <img src="images/ucu_logo.png" alt="UCU Logo" style="max-width:200px; width:100%; height:auto;">
-    <br>
-    <span>Alina Muliak</span>
-  </div>
-
-  <div style="display:inline-block; margin:10px;">
-    <img src="images/wayne_logo.png" alt="Wayne Logo" style="max-width:125px; width:100%; height:auto;">
-    <br>
-    <span>Amar Basu</span>
-  </div>
-
-</div>
+- [Alina Muliak](https://github.com/alinamuliak)
+- Amar Basu
 
 ---
 💡 README template from [here](https://github.com/paperswithcode/releasing-research-code/blob/master/templates/README.md).
