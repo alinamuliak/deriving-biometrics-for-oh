@@ -23,17 +23,17 @@ of the OH in a patient.
 
 To run and test our code, follow the steps below.
 
-
+## Prerequisites 🎀
+- Python (version greater than 3.10)
+- Git Large File Storage. If not installed, navigate to [git-lfs.com](https://git-lfs.com/) and click **Download**.
 ## Set up ⚙️
-<mark> add info about python version </mark>
 
 - `git clone https://github.com/alinamuliak/deriving-biometrics-for-oh.git`
 - `cd deriving-biometrics-for-oh`
 - `pip install virtualenv`, if `virtualenv` is not installed yet
-- `virtualenv venv`
+- `virtualenv venv` or `python -m venv venv`
 - `source venv/bin/activate` on Unix system; `venv\Scripts\activate` on Windows
 - `pip install -r requirements.txt`
-- Navigate to [git-lfs.com](https://git-lfs.com/) and click **Download**.
 - `git lfs install`
 - `git lfs pull`
 
